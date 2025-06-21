@@ -105,24 +105,43 @@ class OptimizedVectorstore:
             logger.info(f"Creating new vectorstore with {len(documents)} documents...")
             start_time = time.time()
             
-            # Create new vectorstore
-            self.vectorstore = Chroma.from_documents(
-                documents=documents,
-                embedding=self.embeddings,
-                persist_directory=self.persist_directory
-            )
+            # Validate documents before creating vectorstore
+            if not documents:
+                raise Exception("No documents provided for vectorstore creation")
             
-            # Persist to disk
-            logger.info("Persisting vectorstore to disk...")
-            self.vectorstore.persist()
+            logger.info(f"Document sample: {documents[0].page_content[:100]}...")
             
-            logger.info(f"✓ New vectorstore created and saved in {time.time() - start_time:.2f} seconds")
-            return self.vectorstore
+            # Create new vectorstore with error handling
+            try:
+                logger.info("Creating Chroma vectorstore...")
+                self.vectorstore = Chroma.from_documents(
+                    documents=documents,
+                    embedding=self.embeddings,
+                    persist_directory=self.persist_directory
+                )
+                logger.info("✓ Chroma vectorstore created successfully")
+                
+                # Persist to disk
+                logger.info("Persisting vectorstore to disk...")
+                self.vectorstore.persist()
+                logger.info("✓ Vectorstore persisted to disk")
+                
+                logger.info(f"✓ New vectorstore created and saved in {time.time() - start_time:.2f} seconds")
+                return self.vectorstore
+                
+            except Exception as e:
+                logger.error(f"❌ Error creating Chroma vectorstore: {str(e)}")
+                logger.error(f"Error type: {type(e).__name__}")
+                import traceback
+                logger.error(f"Full traceback: {traceback.format_exc()}")
+                return None
                 
         except Exception as e:
             logger.error(f"❌ Error in load_or_create_vectorstore: {str(e)}")
             logger.error(f"Documents count: {len(documents) if documents else 0}")
             logger.error(f"Persist directory: {self.persist_directory}")
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
             return None
     
     def get_vectorstore(self, documents: List) -> Optional[Chroma]:
@@ -140,6 +159,14 @@ def create_vectorstore(documents):
     """Optimized vectorstore creation with fallback embeddings"""
     try:
         logger.info(f"Starting vectorstore creation with {len(documents)} documents")
+        
+        # Validate input
+        if not documents:
+            logger.error("❌ No documents provided")
+            return None
+            
+        logger.info(f"First document content preview: {documents[0].page_content[:100]}...")
+        
         result = vectorstore_manager.get_vectorstore(documents)
         
         if result is None:
@@ -151,4 +178,6 @@ def create_vectorstore(documents):
         
     except Exception as e:
         logger.error(f"❌ Unexpected error in create_vectorstore: {str(e)}")
+        import traceback
+        logger.error(f"Full traceback: {traceback.format_exc()}")
         return None

@@ -44,16 +44,27 @@ def initialize_chatbot():
         if not os.path.exists(pdf_path):
             raise FileNotFoundError(f"PDF file not found: {pdf_path}")
         
+        logger.info(f"PDF path exists: {pdf_path}")
         pages = load_pdf(pdf_path)
+        
+        if not pages:
+            raise Exception("No pages loaded from PDF")
+            
         pdf_time = time.time() - pdf_start
         logger.info(f"✓ PDF loaded successfully in {pdf_time:.2f} seconds ({len(pages)} pages)")
+        logger.info(f"First page content preview: {pages[0].page_content[:100]}...")
         
         # Step 2: Split documents
         split_start = time.time()
         logger.info("Step 2/5: Splitting documents into chunks...")
         documents = split_docs(pages)
+        
+        if not documents:
+            raise Exception("No documents created after splitting")
+            
         split_time = time.time() - split_start
         logger.info(f"✓ Documents split successfully in {split_time:.2f} seconds ({len(documents)} chunks)")
+        logger.info(f"First chunk content preview: {documents[0].page_content[:100]}...")
         
         # Step 3: Create vectorstore
         vector_start = time.time()
@@ -95,6 +106,8 @@ def initialize_chatbot():
         
     except Exception as e:
         logger.error(f"❌ Initialization failed: {str(e)}")
+        import traceback
+        logger.error(f"Full traceback: {traceback.format_exc()}")
         initialization_lock = False
         raise
     finally:
