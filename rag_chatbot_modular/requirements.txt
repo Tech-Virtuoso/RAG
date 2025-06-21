@@ -1,0 +1,13 @@
+flask==3.0.2
+langchain==0.1.12
+langchain-community==0.0.28
+langchain-mistralai==0.0.3
+mistralai>=0.0.11,<0.0.12
+python-dotenv==1.0.1
+chromadb==0.4.24
+pypdf==4.1.0
+faiss-cpu==1.7.4
+requests==2.31.0
+sentence-transformers==2.2.2
+torch==2.2.1
+transformers==4.37.2 
