@@ -1,12 +1,3 @@
-Here is the professionally formatted `README.md` version of your **RAG Chatbot Application** documentation, ready to be added to your GitHub repository:
-
-````markdown
-# 💬 RAG Chatbot Application  
-*A Production-Ready Retrieval-Augmented Generation Chatbot Using Flask, Ollama, and LangChain*
-
----
-
-## 🚀 Quick Start Guide
 
 ### ✅ Option 1: Use Startup Script *(Recommended)*
 
