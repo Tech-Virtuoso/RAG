@@ -36,28 +36,36 @@ def initialize_chatbot():
         total_start_time = time.time()
         logger.info("=== Starting RAG Chatbot Initialization ===")
         
-        # Step 1: Load PDF
+        # Step 1: Load PDFs
         pdf_start = time.time()
-        logger.info("Step 1/5: Loading PDF document...")
-        pdf_path = r"D:\Inside AIML\Projects\RAG\data\cs224n-self-attention-transformers-2023_draft.pdf"
-        
-        if not os.path.exists(pdf_path):
-            raise FileNotFoundError(f"PDF file not found: {pdf_path}")
-        
-        logger.info(f"PDF path exists: {pdf_path}")
-        pages = load_pdf(pdf_path)
-        
-        if not pages:
-            raise Exception("No pages loaded from PDF")
-            
+        logger.info("Step 1/5: Loading PDF documents from data folder...")
+        data_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), '../data'))
+        pdf_files = [os.path.join(data_folder, f) for f in os.listdir(data_folder) if f.lower().endswith('.pdf')]
+        if not pdf_files:
+            raise FileNotFoundError(f"No PDF files found in data folder: {data_folder}")
+        logger.info(f"Found {len(pdf_files)} PDF(s): {pdf_files}")
+        all_pages = []
+        for pdf_path in pdf_files:
+            logger.info(f"Loading PDF: {pdf_path}")
+            if not os.path.exists(pdf_path):
+                logger.warning(f"PDF file not found: {pdf_path}")
+                continue
+            pages = load_pdf(pdf_path)
+            if not pages:
+                logger.warning(f"No pages loaded from PDF: {pdf_path}")
+                continue
+            logger.info(f"Loaded {len(pages)} pages from {os.path.basename(pdf_path)}")
+            all_pages.extend(pages)
+        if not all_pages:
+            raise Exception("No pages loaded from any PDF in the data folder")
         pdf_time = time.time() - pdf_start
-        logger.info(f"✓ PDF loaded successfully in {pdf_time:.2f} seconds ({len(pages)} pages)")
-        logger.info(f"First page content preview: {pages[0].page_content[:100]}...")
+        logger.info(f"✓ All PDFs loaded successfully in {pdf_time:.2f} seconds ({len(all_pages)} total pages)")
+        logger.info(f"First page content preview: {all_pages[0].page_content[:100]}...")
         
         # Step 2: Split documents
         split_start = time.time()
         logger.info("Step 2/5: Splitting documents into chunks...")
-        documents = split_docs(pages)
+        documents = split_docs(all_pages)
         
         if not documents:
             raise Exception("No documents created after splitting")
